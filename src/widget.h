@@ -44,7 +44,9 @@ private:
     QSerialPort             *_tty;
     QVector<quint8>         data;
 
-
+    float                   _fMin;
+    float                   _fMax;
+    float                   _fScale;
 };
 
 #endif // WIDGET_H

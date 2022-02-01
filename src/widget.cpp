@@ -17,6 +17,9 @@ Widget::Widget(QWidget *parent)
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
+    _fMin=255.0f;
+    _fMax=-287.0f;
+    _fScale=1.0f;
     setGeometry(100,100,640,320);
     setCamCv();
     setCamIr();
@@ -121,25 +124,55 @@ Widget::camIrUpdate(){
 #ifdef DEBUG_PC
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
+    cv::Mat imgTmp, imgTmpCm;
     QByteArray readData = _tty->readAll();
-    qInfo() << readData.length();
-    if(130 == readData.length()) {
-        cv::Mat imageIr(cv::Size(8,8), CV_16UC1, readData.data());
-        cv::Mat imgTmp, imgTmp8, imgTmpCm;
-        //cv::imwrite("8x8.png",imageIr);//OK
+    float fData[64];
+    float fTmp=0.0;
+
+    if(386 == readData.length()) {
+        //qDebug()<< readData.data();
+        QList<QByteArray> arr = readData.split(' ');
+        qDebug() << arr.length();
+        for (int i=0; i<64;i++){
+            fTmp = arr.at(i).toFloat();
+            fData[i] = fTmp;
+            if (fTmp>_fMax){ _fMax=fTmp; }
+            if (fTmp<_fMin){ _fMin=fTmp; }
+
+        }//for
+        _fScale=255.0/(_fMax-_fMin);
+        qDebug() << "min: " << _fMin <<", max:"<< _fMax << " ,scale" << _fScale;
+        QByteArray imgData;
+
+        for (int i=0; i<64;i++){
+            fTmp = (fData[i]-_fMin)*_fScale;
+            imgData.append((int) fTmp);
+            //qDebug() << (int) fTmp;
+        }//for
+        //qDebug() << imgData.length() << imgData.data();
+
+        cv::Mat imageIr(cv::Size(8,8), CV_8U, imgData.data());
+        //cv::imwrite("8x8.png",imageIr);//OK, need sometuning
+
         cv::resize(imageIr,imgTmp, cv::Size(240,240), cv::INTER_LINEAR);
-        //cv::imwrite("240x240.png",imgTmp);//OK
-        imgTmp.convertTo(imgTmp8, CV_8U,1/256.0);
-        //cv::imwrite("240x240x8.png",imgTmp8);//OK
-        cv::applyColorMap(imgTmp8,imgTmpCm,cv::COLORMAP_JET);
+        //cv::imwrite("240x240.png",imgTmp);//OK, need sometuning
+        cv::applyColorMap(imgTmp,imgTmpCm,cv::COLORMAP_JET);
         //cv::imwrite("240x240cm.png",imgTmpCm);//OK, need sometuning
 
-        QImage imageQOut(imgTmp8.cols, imgTmp8.rows,  QImage::Format_RGB888);
-        cv::Mat imageIrOut(cv::Size(imgTmp8.cols,imgTmp8.rows),
+        QImage imageQOut(imgTmp.cols, imgTmp.rows,  QImage::Format_RGB888);
+        cv::Mat imageIrOut(cv::Size(imgTmp.cols,imgTmp.rows),
                            CV_8UC3, imageQOut.bits());
 
         cv::cvtColor(imgTmpCm, imageIrOut, cv::COLOR_BGR2RGB);
 
         _lbCamIR->setPixmap(QPixmap::fromImage(imageQOut.scaledToWidth(240)));
+        //*/
+        _fMin=287.0f;
+        _fMax=-287.0f;
+    } else {
+        qInfo() << "wrong read: "<<readData.length() << " bytes";
     }
 }
+
+
+
