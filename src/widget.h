@@ -20,6 +20,9 @@ public:
     ~Widget();
 
 signals:
+private slots:
+    void    timerUpdate();
+    void    camUpdate();
 
 private:
     void    setUI();
@@ -34,9 +37,10 @@ private:
 
     QTimer      *_timer;
 
-    cv::VideoCapture        *cvCap;
-    cv::Mat                 *frame;
+    cv::VideoCapture        *_cvCap;
+    cv::Mat                 *_frame;
     QVector<quint8>         data;
+
 };
 
 #endif // WIDGET_H
