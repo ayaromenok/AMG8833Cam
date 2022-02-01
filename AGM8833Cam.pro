@@ -4,6 +4,7 @@
 
 QT       += core gui widgets
 QT       += multimedia multimediawidgets
+QT       += serialport
 
 TARGET = AGM8833Cam
 

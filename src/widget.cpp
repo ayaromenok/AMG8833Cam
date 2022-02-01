@@ -3,11 +3,12 @@
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgproc.hpp>
-//#include <opencv2/highgui.hpp>
+#include <opencv2/highgui.hpp>
 
 #include <QtWidgets>
-#include <QtMultimedia>
-#include <QtMultimediaWidgets>
+//#include <QtMultimedia>
+//#include <QtMultimediaWidgets>
+#include <QSerialPort>
 #include <QDebug>
 
 Widget::Widget(QWidget *parent)
@@ -16,13 +17,15 @@ Widget::Widget(QWidget *parent)
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
+    setGeometry(100,100,640,320);
+    setCamCv();
+    setCamIr();
+    setUI();
+
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
     _timer->start(1000); //msec. min is 100 - 10fps - maximum for AGM8833, but 1000ms for debug for now
 
-    setGeometry(100,100,640,320);
-    setCamCV();
-    setUI();
 }
 Widget::~Widget(){
 #ifdef DEBUG_PC
@@ -51,7 +54,7 @@ Widget::setUI(){
 }
 
 void
-Widget::setCamCV(){
+Widget::setCamCv(){
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
@@ -63,6 +66,7 @@ Widget::setCamCV(){
 
     if (!_cvCap->isOpened()){
         qErrnoWarning("CV camera capture error");
+        return;
     } else {
         _frame = new cv::Mat(320,240, CV_8UC3);
     }
@@ -70,10 +74,17 @@ Widget::setCamCV(){
 }
 
 void
-Widget::setCamIR(){
+Widget::setCamIr(){
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
+    _tty = new QSerialPort(this);
+    _tty->setPortName("/dev/ttyUSB0");
+    _tty->setBaudRate(9600);
+    if (!_tty->open(QIODevice::ReadOnly)) {
+        qErrnoWarning("Serial port opening error");
+        return;
+    }
 }
 
 void
@@ -86,12 +97,12 @@ Widget::timerUpdate(){
         qErrnoWarning("CV Camera FRAME capture error");
     } else {
         //qInfo() << "frame: "<< _frame->cols <<"x"<< _frame->rows;
-        camUpdate();
+        camCvUpdate();
     }
-    //cvIRUpdate();
+    camIrUpdate();
 }
 void
-Widget::camUpdate(){
+Widget::camCvUpdate(){
 #ifdef DEBUG_PC
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
@@ -104,4 +115,31 @@ Widget::camUpdate(){
     cv::cvtColor(imgTmp, imageCvOut, cv::COLOR_BGR2RGB);
 
     _lbCamCV->setPixmap(QPixmap::fromImage(imageOut.scaledToWidth(320)));
+}
+void
+Widget::camIrUpdate(){
+#ifdef DEBUG_PC
+//    qDebug() << __PRETTY_FUNCTION__;
+#endif //DEBUG_PC
+    QByteArray readData = _tty->readAll();
+    qInfo() << readData.length();
+    if(130 == readData.length()) {
+        cv::Mat imageIr(cv::Size(8,8), CV_16UC1, readData.data());
+        cv::Mat imgTmp, imgTmp8, imgTmpCm;
+        //cv::imwrite("8x8.png",imageIr);//OK
+        cv::resize(imageIr,imgTmp, cv::Size(240,240), cv::INTER_LINEAR);
+        //cv::imwrite("240x240.png",imgTmp);//OK
+        imgTmp.convertTo(imgTmp8, CV_8U,1/256.0);
+        //cv::imwrite("240x240x8.png",imgTmp8);//OK
+        cv::applyColorMap(imgTmp8,imgTmpCm,cv::COLORMAP_JET);
+        //cv::imwrite("240x240cm.png",imgTmpCm);//OK, need sometuning
+
+        QImage imageQOut(imgTmp8.cols, imgTmp8.rows,  QImage::Format_RGB888);
+        cv::Mat imageIrOut(cv::Size(imgTmp8.cols,imgTmp8.rows),
+                           CV_8UC3, imageQOut.bits());
+
+        cv::cvtColor(imgTmpCm, imageIrOut, cv::COLOR_BGR2RGB);
+
+        _lbCamIR->setPixmap(QPixmap::fromImage(imageQOut.scaledToWidth(240)));
+    }
 }

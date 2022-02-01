@@ -6,6 +6,7 @@
 
 class QImage;
 class QLabel;
+class QSerialPort;
 
 namespace cv{
     class VideoCapture;
@@ -22,12 +23,13 @@ public:
 signals:
 private slots:
     void    timerUpdate();
-    void    camUpdate();
+    void    camCvUpdate();
+    void    camIrUpdate();
 
 private:
     void    setUI();
-    void    setCamCV();
-    void    setCamIR();
+    void    setCamCv();
+    void    setCamIr();
 
     QLayout     *_loutMain;
     QLabel      *_lbCamCV;
@@ -39,7 +41,9 @@ private:
 
     cv::VideoCapture        *_cvCap;
     cv::Mat                 *_frame;
+    QSerialPort             *_tty;
     QVector<quint8>         data;
+
 
 };
 
