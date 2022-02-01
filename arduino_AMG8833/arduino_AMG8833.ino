@@ -55,7 +55,7 @@ void setup() {
   //void setFramerate10FPS();
 
   // Pour a bowl of serial
-  Serial.begin(115200);
+  Serial.begin(9600);
 
 }
 
@@ -66,12 +66,13 @@ void loop() {
 // int16_t getDeviceTemperatureRaw();
   for(unsigned char i = 0; i < 8; i++){
     for(unsigned char j = 0; j < 8; j++){
-      Serial.print(grideye.getPixelTemperature(i+j*8));    
-      Serial.print(' ');
+      //Serial.print(grideye.getPixelTemperature(i+j*8));
+      Serial.print(grideye.getPixelTemperatureRaw(i+j*8),HEX);
+      //Serial.print(' ');
     }//for j
-    Serial.println();
+    //Serial.println();
   }//for i
-  Serial.println(">");
+  Serial.println("");
   delay(1000);
 
 }
