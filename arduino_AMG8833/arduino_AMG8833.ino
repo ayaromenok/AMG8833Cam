@@ -55,7 +55,7 @@ void setup() {
   //void setFramerate10FPS();
 
   // Pour a bowl of serial
-  Serial.begin(9600);
+  Serial.begin(115200);
 
 }
 

@@ -17,9 +17,9 @@ Widget::Widget(QWidget *parent)
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
-    _fMin=255.0f;
-    _fMax=-287.0f;
-    _fScale=1.0f;
+    _fMin=18.0f;
+    _fMax=-28.0f;
+    _fScale=10.0f;
     setGeometry(100,100,640,320);
     setCamCv();
     setCamIr();
@@ -53,6 +53,15 @@ Widget::setUI(){
     _lbCamCV = new QLabel("CV image");
     _lbCamCV->setPixmap(QPixmap::fromImage(*_imgCamCV).scaled(320, 240));
     _loutMain->addWidget(_lbCamCV);
+
+    _loutCtl = new QVBoxLayout();
+    _edMin = new QLineEdit(QString::number(_fMin));
+    _edMax = new QLineEdit(QString::number(_fMax));
+    _edScale = new QLineEdit(QString::number(_fScale));
+    _loutCtl->addWidget(_edScale);
+    _loutCtl->addWidget(_edMax);
+    _loutCtl->addWidget(_edMin);
+    _loutMain->addItem(_loutCtl);
     setLayout(_loutMain);
 }
 
@@ -83,7 +92,7 @@ Widget::setCamIr(){
 #endif //DEBUG_PC
     _tty = new QSerialPort(this);
     _tty->setPortName("/dev/ttyUSB0");
-    _tty->setBaudRate(9600);
+    _tty->setBaudRate(115200);
     if (!_tty->open(QIODevice::ReadOnly)) {
         qErrnoWarning("Serial port opening error");
         return;
@@ -125,14 +134,15 @@ Widget::camIrUpdate(){
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
     cv::Mat imgTmp, imgTmpCm;
-    QByteArray readData = _tty->readAll();
+    QByteArray imgData;
     float fData[64];
     float fTmp=0.0;
 
+    QByteArray readData = _tty->readAll();
+
     if(386 == readData.length()) {
-        //qDebug()<< readData.data();
         QList<QByteArray> arr = readData.split(' ');
-        qDebug() << arr.length();
+        //qDebug() << arr.length();
         for (int i=0; i<64;i++){
             fTmp = arr.at(i).toFloat();
             fData[i] = fTmp;
@@ -142,33 +152,33 @@ Widget::camIrUpdate(){
         }//for
         _fScale=255.0/(_fMax-_fMin);
         qDebug() << "min: " << _fMin <<", max:"<< _fMax << " ,scale" << _fScale;
-        QByteArray imgData;
+        _edScale->setText(QString::number(_fScale));
+        _edMax->setText(QString::number(_fMax));
+        _edMin->setText(QString::number(_fMin));
+
 
         for (int i=0; i<64;i++){
             fTmp = (fData[i]-_fMin)*_fScale;
             imgData.append((int) fTmp);
-            //qDebug() << (int) fTmp;
         }//for
-        //qDebug() << imgData.length() << imgData.data();
+
 
         cv::Mat imageIr(cv::Size(8,8), CV_8U, imgData.data());
-        //cv::imwrite("8x8.png",imageIr);//OK, need sometuning
+        cv::flip(imageIr, imageIr, 0);
 
         cv::resize(imageIr,imgTmp, cv::Size(240,240), cv::INTER_LINEAR);
-        //cv::imwrite("240x240.png",imgTmp);//OK, need sometuning
         cv::applyColorMap(imgTmp,imgTmpCm,cv::COLORMAP_JET);
-        //cv::imwrite("240x240cm.png",imgTmpCm);//OK, need sometuning
+
 
         QImage imageQOut(imgTmp.cols, imgTmp.rows,  QImage::Format_RGB888);
         cv::Mat imageIrOut(cv::Size(imgTmp.cols,imgTmp.rows),
                            CV_8UC3, imageQOut.bits());
 
-        cv::cvtColor(imgTmpCm, imageIrOut, cv::COLOR_BGR2RGB);
-
+        cv::cvtColor(imgTmpCm, imageIrOut, cv::COLOR_BGR2RGB); //copy to Qt image
         _lbCamIR->setPixmap(QPixmap::fromImage(imageQOut.scaledToWidth(240)));
-        //*/
-        _fMin=287.0f;
-        _fMax=-287.0f;
+
+        //_fMin=287.0f;
+        //_fMax=-287.0f;
     } else {
         qInfo() << "wrong read: "<<readData.length() << " bytes";
     }

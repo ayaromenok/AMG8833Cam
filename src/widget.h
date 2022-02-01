@@ -7,6 +7,7 @@
 class QImage;
 class QLabel;
 class QSerialPort;
+class QLineEdit;
 
 namespace cv{
     class VideoCapture;
@@ -36,6 +37,10 @@ private:
     QLabel      *_lbCamIR;
     QImage      *_imgCamCV;
     QImage      *_imgCamIR;
+    QLayout     *_loutCtl;
+    QLineEdit   *_edMin;
+    QLineEdit   *_edMax;
+    QLineEdit   *_edScale;
 
     QTimer      *_timer;
 
