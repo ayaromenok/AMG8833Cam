@@ -11,6 +11,7 @@ class QLineEdit;
 class QGroupBox;
 class QPushButton;
 class QGridLayout;
+class QComboBox;
 
 namespace cv{
     class VideoCapture;
@@ -73,8 +74,8 @@ private:
 
     QLabel      *_lbCamPathDescr;
     QLabel      *_lbIrPathDescr;
-    QLineEdit   *_edCamPath;
-    QLineEdit   *_edIrPath;
+    QComboBox   *_cbCamPath;
+    QComboBox   *_cbIrPath;
 
     QTimer      *_timer;
 

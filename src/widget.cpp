@@ -21,9 +21,10 @@ Widget::Widget(QWidget *parent)
     _fMax=-28.0f;
     _fScale=10.0f;
     setGeometry(140,200,1180,320);
+    setUI();
     setCamCv();
     setCamIr();
-    setUI();
+
 
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -96,9 +97,9 @@ Widget::setUI(){
     _edTempMin = new QLineEdit(QString::number(_fMin));
     _edTempMax = new QLineEdit(QString::number(_fMax));
     _edTempScale = new QLineEdit(QString::number(_fScale));
-    _edTempMin->setMaximumWidth(40);
-    _edTempMax->setMaximumWidth(40);
-    _edTempScale->setMaximumWidth(40);
+    _edTempMin->setMaximumWidth(60);
+    _edTempMax->setMaximumWidth(60);
+    _edTempScale->setMaximumWidth(60);
     _loutTempRange->addWidget(_lbGradient, 0,0,3,1);
     _loutTempRange->addWidget(_edTempMax,   0,1);
     _loutTempRange->addWidget(_edTempScale, 1,1);
@@ -112,13 +113,19 @@ Widget::setUI(){
     _loutSettings = new QGridLayout();
     _lbCamPathDescr = new QLabel("Cam:");
     _lbIrPathDescr = new QLabel("IR:");
-    _edCamPath = new QLineEdit("/dev/video0");
-    _edCamPath->setMinimumWidth(50);
-    _edIrPath = new QLineEdit("/dev/ttyUSB0");
+    _cbCamPath = new QComboBox();
+    //!ToDo: need to grab devices from file system
+    _cbCamPath->insertItem(0,"/dev/video0");
+    _cbCamPath->insertItem(1,"/dev/video1");
+    _cbCamPath->insertItem(2,"/dev/video2");
+    _cbCamPath->setMinimumWidth(50);
+    _cbIrPath = new QComboBox();
+    _cbIrPath->insertItem(0,"/dev/ttyUSB0");
+    _cbIrPath->insertItem(1,"/dev/ttyUSB1");
     _loutSettings->addWidget(_lbCamPathDescr, 0,0);
     _loutSettings->addWidget(_lbIrPathDescr, 1,0);
-    _loutSettings->addWidget(_edCamPath, 0,1);
-    _loutSettings->addWidget(_edIrPath, 1,1);
+    _loutSettings->addWidget(_cbCamPath, 0,1);
+    _loutSettings->addWidget(_cbIrPath, 1,1);
     _gbSettings->setLayout(_loutSettings);
 
     _loutRight->addWidget(_gbSave);
@@ -139,7 +146,7 @@ Widget::setCamCv(){
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
     _cvCap = new cv::VideoCapture();
-    _cvCap->open(0); // cv::CAP_V4L);
+    _cvCap->open(_cbCamPath->currentIndex()); // cv::CAP_V4L);
     _cvCap->set(cv::CAP_PROP_FRAME_WIDTH, 320);
     _cvCap->set(cv::CAP_PROP_FRAME_HEIGHT, 240);
     //cvCap.set(cv::CAP_PROP_FPS, 30);
@@ -158,8 +165,8 @@ Widget::setCamIr(){
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
-    _tty = new QSerialPort(this);
-    _tty->setPortName("/dev/ttyUSB0");
+    _tty = new QSerialPort(this);    
+    _tty->setPortName(_cbIrPath->currentText());
     _tty->setBaudRate(115200);
     if (!_tty->open(QIODevice::ReadOnly)) {
         qErrnoWarning("Serial port opening error");
