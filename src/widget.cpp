@@ -108,7 +108,7 @@ Widget::timerUpdate(){
     if (0 == _frame->cols){
         qErrnoWarning("CV Camera FRAME capture error");
     } else {
-        camCvUpdate();
+     //   camCvUpdate();
         camIrUpdate();
     }
 }
@@ -121,7 +121,7 @@ Widget::camCvUpdate(){
     cv::Mat imgTmpCam, imgTmpEdge, imgTmpMix;
     cv::cvtColor(*_frame, imgTmpCam, cv::COLOR_RGB2GRAY);
     cv::Canny(imgTmpCam, imgTmpEdge, 80,160);
-    cv::addWeighted(imgTmpCam, 0.6, imgTmpEdge, 0.6,0.0,imgTmpMix);
+    cv::addWeighted(imgTmpCam, 0.6, imgTmpEdge, 0.4,0.0,imgTmpMix);
 
     QImage imageOut(imgTmpCam.cols, imgTmpCam.rows,  QImage::Format_RGB888);
     cv::Mat imageCvOut(cv::Size(imgTmpCam.cols,imgTmpCam.rows),
@@ -180,6 +180,25 @@ Widget::camIrUpdate(){
 
         cv::cvtColor(imgTmpCm, imgIrOut, cv::COLOR_BGR2RGB); //copy to Qt image
         _lbCamIR->setPixmap(QPixmap::fromImage(imgQOut.scaledToWidth(240)));
+//cam
+        cv::Mat imgTmpCam, imgTmpEdge, imgTmpMix, imgTmpCmResize, imgTmpMixClr;
+        cv::cvtColor(*_frame, imgTmpCam, cv::COLOR_RGB2GRAY);
+        cv::Canny(imgTmpCam, imgTmpEdge, 80,160);
+
+        cv::copyMakeBorder(imgTmpCm, imgTmpCmResize, 0,0,40,40,cv::BORDER_CONSTANT);
+
+
+        //cv::addWeighted(imgTmpCam, 0.6, imgTmpEdge, 0.4,0.0, imgTmpMix);
+        cv::cvtColor(imgTmpEdge, imgTmpMixClr, cv::COLOR_GRAY2RGB);
+        cv::addWeighted(imgTmpCmResize, 0.6, imgTmpMixClr, 0.4,0.0, imgTmpMixClr);
+
+        QImage imageOut(imgTmpCam.cols, imgTmpCam.rows,  QImage::Format_RGB888);
+        cv::Mat imageCvOut(cv::Size(imgTmpCam.cols,imgTmpCam.rows),
+                           CV_8UC3, imageOut.bits());
+
+        cv::cvtColor(imgTmpMixClr, imageCvOut, cv::COLOR_BGR2RGB);
+
+        _lbCamCV->setPixmap(QPixmap::fromImage(imageOut.scaledToWidth(320)));
 
         //_fMin=287.0f;
         //_fMax=-287.0f;
