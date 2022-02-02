@@ -1,4 +1,6 @@
 /*
+  Updates by Andrey Yaromenok
+  Date: 2022 February 2nd
   Using the Panasonic Grid-EYE Sensor
   By: Nick Poole
   SparkFun Electronics

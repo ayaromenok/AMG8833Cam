@@ -163,19 +163,20 @@ Widget::camIrUpdate(){
         }//for
 
 
-        cv::Mat imageIr(cv::Size(8,8), CV_8U, imgData.data());
-        cv::flip(imageIr, imageIr, 0);
+        cv::Mat imgIr(cv::Size(8,8), CV_8U, imgData.data());
+        cv::flip(imgIr, imgIr, 0);
+        cv::rotate(imgIr, imgIr,  cv::ROTATE_180);
 
-        cv::resize(imageIr,imgTmp, cv::Size(240,240), cv::INTER_LINEAR);
+        cv::resize(imgIr,imgTmp, cv::Size(240,240), cv::INTER_LINEAR);
         cv::applyColorMap(imgTmp,imgTmpCm,cv::COLORMAP_JET);
 
 
-        QImage imageQOut(imgTmp.cols, imgTmp.rows,  QImage::Format_RGB888);
-        cv::Mat imageIrOut(cv::Size(imgTmp.cols,imgTmp.rows),
-                           CV_8UC3, imageQOut.bits());
+        QImage imgQOut(imgTmp.cols, imgTmp.rows,  QImage::Format_RGB888);
+        cv::Mat imgIrOut(cv::Size(imgTmp.cols,imgTmp.rows),
+                           CV_8UC3, imgQOut.bits());
 
-        cv::cvtColor(imgTmpCm, imageIrOut, cv::COLOR_BGR2RGB); //copy to Qt image
-        _lbCamIR->setPixmap(QPixmap::fromImage(imageQOut.scaledToWidth(240)));
+        cv::cvtColor(imgTmpCm, imgIrOut, cv::COLOR_BGR2RGB); //copy to Qt image
+        _lbCamIR->setPixmap(QPixmap::fromImage(imgQOut.scaledToWidth(240)));
 
         //_fMin=287.0f;
         //_fMax=-287.0f;
