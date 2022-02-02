@@ -191,10 +191,11 @@ Widget::camCvUpdate(){
         cv::cvtColor(*_frame, imgTmpCam, cv::COLOR_RGB2GRAY);
         cv::Canny(imgTmpCam, imgTmpEdge, 80,160);
 
-        cv::copyMakeBorder(imgTmpCm, imgTmpCmResize, 0,0,40,40,cv::BORDER_CONSTANT);
+        //try to fit two camera images
+        cv::resize(imgTmpCm,imgTmpCm, cv::Size(360,360), cv::INTER_LINEAR);
+        imgTmpCmResize = imgTmpCm(cv::Range(60,300),cv::Range(20,340));
+        //cv::copyMakeBorder(imgTmpCm, imgTmpCmResize, 0,0,-40,-40,cv::BORDER_CONSTANT);
 
-
-        //cv::addWeighted(imgTmpCam, 0.6, imgTmpEdge, 0.4,0.0, imgTmpMix);
         cv::cvtColor(imgTmpEdge, imgTmpMixClr, cv::COLOR_GRAY2RGB);
         cv::addWeighted(imgTmpCmResize, 0.6, imgTmpMixClr, 0.4,0.0, imgTmpMixClr);
 
