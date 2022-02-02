@@ -24,8 +24,8 @@ public:
 signals:
 private slots:
     void    timerUpdate();
+    void    camCamUpdate();
     void    camCvUpdate();
-    void    camIrUpdate();
 
 private:
     void    setUI();
@@ -35,8 +35,10 @@ private:
     QLayout     *_loutMain;
     QLabel      *_lbCamCV;
     QLabel      *_lbCamIR;
+    QLabel      *_lbCamCam;
     QImage      *_imgCamCV;
     QImage      *_imgCamIR;
+    QImage      *_imgCamCam;
     QLayout     *_loutCtl;
     QLineEdit   *_edMin;
     QLineEdit   *_edMax;

@@ -20,7 +20,7 @@ Widget::Widget(QWidget *parent)
     _fMin=18.0f;
     _fMax=-28.0f;
     _fScale=10.0f;
-    setGeometry(100,100,640,320);
+    setGeometry(100,100,1024,320);
     setCamCv();
     setCamIr();
     setUI();
@@ -48,6 +48,11 @@ Widget::setUI(){
     _lbCamIR = new QLabel("IR image");
     _lbCamIR->setPixmap(QPixmap::fromImage(*_imgCamIR).scaled(240, 240));
     _loutMain->addWidget(_lbCamIR);
+
+    _imgCamCam = new QImage(":/640x480.png");
+    _lbCamCam = new QLabel("Cam image");
+    _lbCamCam->setPixmap(QPixmap::fromImage(*_imgCamCam).scaled(320, 240));
+    _loutMain->addWidget(_lbCamCam);
 
     _imgCamCV = new QImage(":/640x480.png");
     _lbCamCV = new QLabel("CV image");
@@ -108,20 +113,21 @@ Widget::timerUpdate(){
     if (0 == _frame->cols){
         qErrnoWarning("CV Camera FRAME capture error");
     } else {
-     //   camCvUpdate();
-        camIrUpdate();
+        camCamUpdate();
+        camCvUpdate();
     }
 }
 
 void
-Widget::camCvUpdate(){
+Widget::camCamUpdate(){
 #ifdef DEBUG_PC
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
-    cv::Mat imgTmpCam, imgTmpEdge, imgTmpMix;
+    cv::Mat imgTmpCam, imgTmpEdge, imgTmpEdgeRGB, imgTmpMix;
     cv::cvtColor(*_frame, imgTmpCam, cv::COLOR_RGB2GRAY);
     cv::Canny(imgTmpCam, imgTmpEdge, 80,160);
-    cv::addWeighted(imgTmpCam, 0.6, imgTmpEdge, 0.4,0.0,imgTmpMix);
+    cv::cvtColor(imgTmpEdge,imgTmpEdgeRGB, cv::COLOR_GRAY2RGB);
+    cv::addWeighted(*_frame, 0.8, imgTmpEdgeRGB, 0.4,0.0,imgTmpMix);
 
     QImage imageOut(imgTmpCam.cols, imgTmpCam.rows,  QImage::Format_RGB888);
     cv::Mat imageCvOut(cv::Size(imgTmpCam.cols,imgTmpCam.rows),
@@ -129,10 +135,10 @@ Widget::camCvUpdate(){
 
     cv::cvtColor(imgTmpMix, imageCvOut, cv::COLOR_BGR2RGB);
 
-    _lbCamCV->setPixmap(QPixmap::fromImage(imageOut.scaledToWidth(320)));
+    _lbCamCam->setPixmap(QPixmap::fromImage(imageOut.scaledToWidth(320)));
 }
 void
-Widget::camIrUpdate(){
+Widget::camCvUpdate(){
 #ifdef DEBUG_PC
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
