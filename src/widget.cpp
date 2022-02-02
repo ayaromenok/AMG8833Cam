@@ -43,30 +43,61 @@ Widget::setUI(){
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
     _loutMain = new QHBoxLayout;
+
+    _gbInput = new QGroupBox("Input");
+    _loutInput = new QHBoxLayout();
+    _loutInputIr = new QVBoxLayout();
+    _loutInputCam = new QVBoxLayout();
+
+    _lbCamIrDescr = new QLabel("IR image");
     _imgCamIR = new QImage(":/8x8.png");
-    qDebug()<< "image" << _imgCamIR->width() <<"x" << _imgCamIR->height();
     _lbCamIR = new QLabel("IR image");
     _lbCamIR->setPixmap(QPixmap::fromImage(*_imgCamIR).scaled(240, 240));
-    _loutMain->addWidget(_lbCamIR);
+    _loutInputIr->addWidget(_lbCamIrDescr);
+    _loutInputIr->addWidget(_lbCamIR);
 
+
+    _lbCamCamDescr = new QLabel("Cam image");
     _imgCamCam = new QImage(":/640x480.png");
     _lbCamCam = new QLabel("Cam image");
     _lbCamCam->setPixmap(QPixmap::fromImage(*_imgCamCam).scaled(320, 240));
-    _loutMain->addWidget(_lbCamCam);
+    _loutInputCam->addWidget(_lbCamCamDescr);
+    _loutInputCam->addWidget(_lbCamCam);
 
+    _loutInput->addItem(_loutInputIr);
+    _loutInput->addItem(_loutInputCam);
+    _gbInput->setLayout(_loutInput);
+
+    _gbRes = new QGroupBox("Result");
+    _loutRes=new QVBoxLayout();
     _imgCamCV = new QImage(":/640x480.png");
     _lbCamCV = new QLabel("CV image");
+    _lbCamCvDescr= new QLabel("Result image");
     _lbCamCV->setPixmap(QPixmap::fromImage(*_imgCamCV).scaled(320, 240));
-    _loutMain->addWidget(_lbCamCV);
+    _loutRes->addWidget(_lbCamCvDescr);
+    _loutRes->addWidget(_lbCamCV);
+    _gbRes->setLayout(_loutRes);
 
-    _loutCtl = new QVBoxLayout();
+    _gbSave = new QGroupBox("Save");
+
+    _gbTempRange = new QGroupBox("Temp Range");
+    _loutTempRange = new QVBoxLayout();
     _edMin = new QLineEdit(QString::number(_fMin));
     _edMax = new QLineEdit(QString::number(_fMax));
     _edScale = new QLineEdit(QString::number(_fScale));
-    _loutCtl->addWidget(_edScale);
-    _loutCtl->addWidget(_edMax);
-    _loutCtl->addWidget(_edMin);
-    _loutMain->addItem(_loutCtl);
+    _loutTempRange->addWidget(_edScale);
+    _loutTempRange->addWidget(_edMax);
+    _loutTempRange->addWidget(_edMin);
+    _gbTempRange->setLayout(_loutTempRange);
+
+    _gbSettings = new QGroupBox("Settings");
+
+
+
+
+    _loutMain->addWidget(_gbInput);
+    _loutMain->addWidget(_gbRes);
+
     setLayout(_loutMain);
 }
 

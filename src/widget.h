@@ -8,6 +8,7 @@ class QImage;
 class QLabel;
 class QSerialPort;
 class QLineEdit;
+class QGroupBox;
 
 namespace cv{
     class VideoCapture;
@@ -33,13 +34,31 @@ private:
     void    setCamIr();
 
     QLayout     *_loutMain;
+
+    QGroupBox   *_gbInput;
+    QGroupBox   *_gbRes;
+    QGroupBox   *_gbSave;
+    QGroupBox   *_gbTempRange;
+    QGroupBox   *_gbSettings;
+    QLabel      *_lbCamCvDescr;
+    QLabel      *_lbCamIrDescr;
+    QLabel      *_lbCamCamDescr;
+    QLayout     *_loutInput;
+    QLayout     *_loutInputIr;
+    QLayout     *_loutInputCam;
+    QLayout     *_loutRes;
+    QLayout     *_loutRight;
+    QLayout     *_loutSave;
+    QLayout     *_loutTempRange;
+    QLayout     *_loutSettings;
+
     QLabel      *_lbCamCV;
     QLabel      *_lbCamIR;
     QLabel      *_lbCamCam;
     QImage      *_imgCamCV;
     QImage      *_imgCamIR;
     QImage      *_imgCamCam;
-    QLayout     *_loutCtl;
+
     QLineEdit   *_edMin;
     QLineEdit   *_edMax;
     QLineEdit   *_edScale;
