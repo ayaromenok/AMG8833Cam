@@ -20,7 +20,7 @@ Widget::Widget(QWidget *parent)
     _fMin=18.0f;
     _fMax=-28.0f;
     _fScale=10.0f;
-    setGeometry(100,100,1024,320);
+    setGeometry(140,200,1180,320);
     setCamCv();
     setCamIr();
     setUI();
@@ -69,7 +69,7 @@ Widget::setUI(){
     _gbInput->setLayout(_loutInput);
 
     _gbRes = new QGroupBox("Result");
-    _loutRes=new QVBoxLayout();
+    _loutRes = new QVBoxLayout();
     _imgCamCV = new QImage(":/640x480.png");
     _lbCamCV = new QLabel("CV image");
     _lbCamCvDescr= new QLabel("Result image");
@@ -78,25 +78,57 @@ Widget::setUI(){
     _loutRes->addWidget(_lbCamCV);
     _gbRes->setLayout(_loutRes);
 
+    _loutRight=new QVBoxLayout();
     _gbSave = new QGroupBox("Save");
+    _pbSave = new QPushButton("Save to file");
+    _loutSave = new QVBoxLayout();
+    _loutSave->addWidget(_pbSave);
+    _gbSave->setLayout(_loutSave);
 
     _gbTempRange = new QGroupBox("Temp Range");
-    _loutTempRange = new QVBoxLayout();
-    _edMin = new QLineEdit(QString::number(_fMin));
-    _edMax = new QLineEdit(QString::number(_fMax));
-    _edScale = new QLineEdit(QString::number(_fScale));
-    _loutTempRange->addWidget(_edScale);
-    _loutTempRange->addWidget(_edMax);
-    _loutTempRange->addWidget(_edMin);
+    _loutTempRange = new QGridLayout();
+    _imgGradient = new QImage(":/20x256gradient.png");
+    _lbGradient = new QLabel("Gradient");
+    _lbGradient->setPixmap(QPixmap::fromImage(*_imgGradient).scaled(20, 128));
+    _lbTempMinDescr = new QLabel("Temp Min/C");
+    _lbTempMaxDescr = new QLabel("Temp Max/C");
+    _lbTempScaleDescr = new QLabel("Scale");
+    _edTempMin = new QLineEdit(QString::number(_fMin));
+    _edTempMax = new QLineEdit(QString::number(_fMax));
+    _edTempScale = new QLineEdit(QString::number(_fScale));
+    _edTempMin->setMaximumWidth(40);
+    _edTempMax->setMaximumWidth(40);
+    _edTempScale->setMaximumWidth(40);
+    _loutTempRange->addWidget(_lbGradient, 0,0,3,1);
+    _loutTempRange->addWidget(_edTempMax,   0,1);
+    _loutTempRange->addWidget(_edTempScale, 1,1);
+    _loutTempRange->addWidget(_edTempMin,   2,1);
+    _loutTempRange->addWidget(_lbTempMaxDescr,   0,2);
+    _loutTempRange->addWidget(_lbTempScaleDescr, 1,2);
+    _loutTempRange->addWidget(_lbTempMinDescr,   2,2);
     _gbTempRange->setLayout(_loutTempRange);
 
     _gbSettings = new QGroupBox("Settings");
+    _loutSettings = new QGridLayout();
+    _lbCamPathDescr = new QLabel("Cam:");
+    _lbIrPathDescr = new QLabel("IR:");
+    _edCamPath = new QLineEdit("/dev/video0");
+    _edCamPath->setMinimumWidth(50);
+    _edIrPath = new QLineEdit("/dev/ttyUSB0");
+    _loutSettings->addWidget(_lbCamPathDescr, 0,0);
+    _loutSettings->addWidget(_lbIrPathDescr, 1,0);
+    _loutSettings->addWidget(_edCamPath, 0,1);
+    _loutSettings->addWidget(_edIrPath, 1,1);
+    _gbSettings->setLayout(_loutSettings);
 
-
+    _loutRight->addWidget(_gbSave);
+    _loutRight->addWidget(_gbTempRange);
+    _loutRight->addWidget(_gbSettings);
 
 
     _loutMain->addWidget(_gbInput);
     _loutMain->addWidget(_gbRes);
+    _loutMain->addItem(_loutRight);
 
     setLayout(_loutMain);
 }
@@ -192,9 +224,9 @@ Widget::camCvUpdate(){
         }//for
         _fScale=255.0/(_fMax-_fMin);
         qDebug() << "min: " << _fMin <<", max:"<< _fMax << " ,scale" << _fScale;
-        _edScale->setText(QString::number(_fScale));
-        _edMax->setText(QString::number(_fMax));
-        _edMin->setText(QString::number(_fMin));
+        _edTempScale->setText(QString::number(_fScale));
+        _edTempMax->setText(QString::number(_fMax));
+        _edTempMin->setText(QString::number(_fMin));
 
 
         for (int i=0; i<64;i++){

@@ -9,6 +9,8 @@ class QLabel;
 class QSerialPort;
 class QLineEdit;
 class QGroupBox;
+class QPushButton;
+class QGridLayout;
 
 namespace cv{
     class VideoCapture;
@@ -49,8 +51,9 @@ private:
     QLayout     *_loutRes;
     QLayout     *_loutRight;
     QLayout     *_loutSave;
-    QLayout     *_loutTempRange;
-    QLayout     *_loutSettings;
+    QGridLayout *_loutTempRange;
+    QGridLayout *_loutSettings;
+    QPushButton *_pbSave;
 
     QLabel      *_lbCamCV;
     QLabel      *_lbCamIR;
@@ -59,9 +62,19 @@ private:
     QImage      *_imgCamIR;
     QImage      *_imgCamCam;
 
-    QLineEdit   *_edMin;
-    QLineEdit   *_edMax;
-    QLineEdit   *_edScale;
+    QLabel      *_lbGradient;
+    QImage      *_imgGradient;
+    QLabel      *_lbTempMinDescr;
+    QLabel      *_lbTempMaxDescr;
+    QLabel      *_lbTempScaleDescr;
+    QLineEdit   *_edTempMin;
+    QLineEdit   *_edTempMax;
+    QLineEdit   *_edTempScale;
+
+    QLabel      *_lbCamPathDescr;
+    QLabel      *_lbIrPathDescr;
+    QLineEdit   *_edCamPath;
+    QLineEdit   *_edIrPath;
 
     QTimer      *_timer;
 

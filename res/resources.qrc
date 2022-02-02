@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>640x480.png</file>
         <file>8x8.png</file>
+        <file>20x256gradient.png</file>
     </qresource>
 </RCC>
