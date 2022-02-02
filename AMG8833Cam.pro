@@ -3,7 +3,7 @@
 # https://github.com/ayaromenok/AMG8833Cam/blob/master/LICENSE
 
 QT       += core gui widgets
-QT       += multimedia multimediawidgets
+#QT       += multimedia multimediawidgets
 QT       += serialport
 
 TARGET = AGM8833Cam
