@@ -108,23 +108,26 @@ Widget::timerUpdate(){
     if (0 == _frame->cols){
         qErrnoWarning("CV Camera FRAME capture error");
     } else {
-        //qInfo() << "frame: "<< _frame->cols <<"x"<< _frame->rows;
         camCvUpdate();
+        camIrUpdate();
     }
-    camIrUpdate();
 }
+
 void
 Widget::camCvUpdate(){
 #ifdef DEBUG_PC
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
-    cv::Mat imgTmp;
-    cv::cvtColor(*_frame, imgTmp, cv::COLOR_RGB2GRAY);
-    QImage imageOut(imgTmp.cols, imgTmp.rows,  QImage::Format_RGB888);
-    cv::Mat imageCvOut(cv::Size(imgTmp.cols,imgTmp.rows),
+    cv::Mat imgTmpCam, imgTmpEdge, imgTmpMix;
+    cv::cvtColor(*_frame, imgTmpCam, cv::COLOR_RGB2GRAY);
+    cv::Canny(imgTmpCam, imgTmpEdge, 80,160);
+    cv::addWeighted(imgTmpCam, 0.6, imgTmpEdge, 0.6,0.0,imgTmpMix);
+
+    QImage imageOut(imgTmpCam.cols, imgTmpCam.rows,  QImage::Format_RGB888);
+    cv::Mat imageCvOut(cv::Size(imgTmpCam.cols,imgTmpCam.rows),
                        CV_8UC3, imageOut.bits());
 
-    cv::cvtColor(imgTmp, imageCvOut, cv::COLOR_BGR2RGB);
+    cv::cvtColor(imgTmpMix, imageCvOut, cv::COLOR_BGR2RGB);
 
     _lbCamCV->setPixmap(QPixmap::fromImage(imageOut.scaledToWidth(320)));
 }
