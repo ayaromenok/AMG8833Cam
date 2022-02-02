@@ -1,3 +1,7 @@
+// Copyright(C) 2019-2022 Andrey Yaromenok, ayaromenok@gmail.com
+// MIT License
+// https://github.com/ayaromenok/AMG8833Cam/blob/master/LICENSE
+
 #include "widget.h"
 
 #include <opencv2/core.hpp>
@@ -6,8 +10,7 @@
 #include <opencv2/highgui.hpp>
 
 #include <QtWidgets>
-//#include <QtMultimedia>
-//#include <QtMultimediaWidgets>
+#include <QSettings>
 #include <QSerialPort>
 #include <QDebug>
 
@@ -17,9 +20,10 @@ Widget::Widget(QWidget *parent)
 #ifdef DEBUG_PC
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
-    _fMin=18.0f;
-    _fMax=-28.0f;
-    _fScale=10.0f;
+    _settings = new QSettings("AndreyYaromenok","AMG8833Cam");
+    _fMin=_settings->value("Temperature/Min",18).toFloat();
+    _fMax=_settings->value("Temperature/Max",28).toFloat();
+    _fScale=_settings->value("Temperature/Scale",10).toFloat();
     setGeometry(140,200,1180,320);
     setUI();
     setCamCv();
@@ -28,7 +32,7 @@ Widget::Widget(QWidget *parent)
 
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-    _timer->start(1000); //msec. min is 100 - 10fps - maximum for AGM8833, but 1000ms for debug for now
+    _timer->start(_settings->value("Timer/msec",1000).toInt()); //msec. min is 100 - 10fps - maximum for AGM8833, but 1000ms for debug for now
 
 }
 Widget::~Widget(){
@@ -36,6 +40,9 @@ Widget::~Widget(){
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
     _timer->stop();
+    _settings->setValue("devices/video",_cbCamPath->currentText());
+    _settings->setValue("devices/tty",_cbIrPath->currentText());
+    _settings->sync();
 }
 
 void
@@ -118,10 +125,12 @@ Widget::setUI(){
     _cbCamPath->insertItem(0,"/dev/video0");
     _cbCamPath->insertItem(1,"/dev/video1");
     _cbCamPath->insertItem(2,"/dev/video2");
+    _cbCamPath->setCurrentText(_settings->value("devices/video","/dev/video0").toString());
     _cbCamPath->setMinimumWidth(50);
     _cbIrPath = new QComboBox();
     _cbIrPath->insertItem(0,"/dev/ttyUSB0");
     _cbIrPath->insertItem(1,"/dev/ttyUSB1");
+    _cbIrPath->setCurrentText(_settings->value("devices/tty","/dev/ttyUSB0").toString());
     _loutSettings->addWidget(_lbCamPathDescr, 0,0);
     _loutSettings->addWidget(_lbIrPathDescr, 1,0);
     _loutSettings->addWidget(_cbCamPath, 0,1);
@@ -146,18 +155,16 @@ Widget::setCamCv(){
     qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
     _cvCap = new cv::VideoCapture();
-    _cvCap->open(_cbCamPath->currentIndex()); // cv::CAP_V4L);
-    _cvCap->set(cv::CAP_PROP_FRAME_WIDTH, 320);
-    _cvCap->set(cv::CAP_PROP_FRAME_HEIGHT, 240);
-    //cvCap.set(cv::CAP_PROP_FPS, 30);
-
+    _cvCap->open(_cbCamPath->currentIndex()); // cv::CAP_V4L);    
     if (!_cvCap->isOpened()){
-        qErrnoWarning("CV camera capture error");
+        qErrnoWarning("AMG8833Cam: CV camera capture(device) error");
         return;
     } else {
-        _frame = new cv::Mat(320,240, CV_8UC3);
+        _cvCap->set(cv::CAP_PROP_FRAME_WIDTH, 320);
+        _cvCap->set(cv::CAP_PROP_FRAME_HEIGHT, 240);
+        //_cvCap->set(cv::CAP_PROP_FPS, 30);
+        _frame = new cv::Mat(320,240, CV_8UC3);        
     }
-    *_cvCap >> *_frame;
 }
 
 void
@@ -169,7 +176,7 @@ Widget::setCamIr(){
     _tty->setPortName(_cbIrPath->currentText());
     _tty->setBaudRate(115200);
     if (!_tty->open(QIODevice::ReadOnly)) {
-        qErrnoWarning("Serial port opening error");
+        qErrnoWarning("AMG8833Cam: Serial port opening error(device name or busy)");
         return;
     }
 }
@@ -179,13 +186,19 @@ Widget::timerUpdate(){
 #ifdef DEBUG_PC
 //    qDebug() << __PRETTY_FUNCTION__;
 #endif //DEBUG_PC
-    *_cvCap >> *_frame;
-    if (0 == _frame->cols){
-        qErrnoWarning("CV Camera FRAME capture error");
+   if(_cvCap->isOpened()){
+        *_cvCap >> *_frame;
+        if (0 == _frame->cols){
+            qErrnoWarning("AMG8833Cam: CV camera Frame capture error");
+            return;
+        } else {
+            camCamUpdate();
+            camCvUpdate();
+        }//frame size
     } else {
-        camCamUpdate();
-        camCvUpdate();
-    }
+       qErrnoWarning("AMG8833Cam: CV camera capture(device) error");
+       return;
+    }//cvCam
 }
 
 void

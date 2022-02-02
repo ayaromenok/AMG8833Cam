@@ -1,3 +1,7 @@
+// Copyright(C) 2019-2022 Andrey Yaromenok, ayaromenok@gmail.com
+// MIT License
+// https://github.com/ayaromenok/AMG8833Cam/blob/master/LICENSE
+
 #ifndef WIDGET_H
 #define WIDGET_H
 
@@ -12,6 +16,7 @@ class QGroupBox;
 class QPushButton;
 class QGridLayout;
 class QComboBox;
+class QSettings;
 
 namespace cv{
     class VideoCapture;
@@ -36,6 +41,7 @@ private:
     void    setCamCv();
     void    setCamIr();
 
+    QSettings   *_settings;
     QLayout     *_loutMain;
 
     QGroupBox   *_gbInput;

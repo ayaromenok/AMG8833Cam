@@ -1,9 +1,10 @@
-// Copyright(C) 2019 Andrey Yaromenok, ayaromenok@gmail.com
+// Copyright(C) 2019-2022 Andrey Yaromenok, ayaromenok@gmail.com
 // MIT License
-// https://github.com/ayaromenok/RaspberryPiCameraForAMG8833/blob/master/LICENSE
+// https://github.com/ayaromenok/AMG8833Cam/blob/master/LICENSE
 
 #include "widget.h"
 #include <QApplication>
+
 
 int main(int argc, char *argv[])
 {
