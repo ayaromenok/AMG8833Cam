@@ -24,7 +24,7 @@ Widget::Widget(QWidget *parent)
     _fMin=_settings->value("Temperature/Min",18).toFloat();
     _fMax=_settings->value("Temperature/Max",28).toFloat();
     _fScale=_settings->value("Temperature/Scale",10).toFloat();
-    setGeometry(140,200,1180,320);
+
     setUI();
     setCamCv();
     setCamIr();
@@ -42,6 +42,8 @@ Widget::~Widget(){
     _timer->stop();
     _settings->setValue("devices/video",_cbCamPath->currentText());
     _settings->setValue("devices/tty",_cbIrPath->currentText());
+    _settings->setValue("devices/tty_speed",_cbIrSpeed->currentText());
+    _settings->setValue("debug/UI", _cbDebugUi->isChecked());
     _settings->sync();
 }
 
@@ -121,6 +123,8 @@ Widget::setUI(){
     _lbCamPathDescr = new QLabel("Cam:");
     _lbIrPathDescr = new QLabel("IR:");
     _cbCamPath = new QComboBox();
+    _cbDebugUi = new QCheckBox("DebugUI");
+    _cbDebugUi->setChecked(_settings->value("debug/UI",true).toBool());
     //!ToDo: need to grab devices from file system
     _cbCamPath->insertItem(0,"/dev/video0");
     _cbCamPath->insertItem(1,"/dev/video1");
@@ -131,18 +135,27 @@ Widget::setUI(){
     _cbIrPath->insertItem(0,"/dev/ttyUSB0");
     _cbIrPath->insertItem(1,"/dev/ttyUSB1");
     _cbIrPath->setCurrentText(_settings->value("devices/tty","/dev/ttyUSB0").toString());
+    _cbIrSpeed = new QComboBox();
+    _cbIrSpeed->insertItem(0,"9600");
+    _cbIrSpeed->insertItem(1,"115200");
+    _cbIrSpeed->setCurrentText(_settings->value("devices/tty_speed","115200").toString());
+
+    //_cbIrSpeed->setMaximumWidth(70);
     _loutSettings->addWidget(_lbCamPathDescr, 0,0);
     _loutSettings->addWidget(_lbIrPathDescr, 1,0);
     _loutSettings->addWidget(_cbCamPath, 0,1);
     _loutSettings->addWidget(_cbIrPath, 1,1);
+    _loutSettings->addWidget(_cbIrSpeed, 1,2);
+    _loutSettings->addWidget(_cbDebugUi,2,0,3,1);
     _gbSettings->setLayout(_loutSettings);
 
     _loutRight->addWidget(_gbSave);
     _loutRight->addWidget(_gbTempRange);
     _loutRight->addWidget(_gbSettings);
 
-
-    _loutMain->addWidget(_gbInput);
+    if(_cbDebugUi->isChecked()){
+        _loutMain->addWidget(_gbInput);
+    }
     _loutMain->addWidget(_gbRes);
     _loutMain->addItem(_loutRight);
 
@@ -174,7 +187,7 @@ Widget::setCamIr(){
 #endif //DEBUG_PC
     _tty = new QSerialPort(this);    
     _tty->setPortName(_cbIrPath->currentText());
-    _tty->setBaudRate(115200);
+    _tty->setBaudRate(_cbIrSpeed->currentText().toInt());
     if (!_tty->open(QIODevice::ReadOnly)) {
         qErrnoWarning("AMG8833Cam: Serial port opening error(device name or busy)");
         return;

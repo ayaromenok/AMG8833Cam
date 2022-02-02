@@ -17,6 +17,7 @@ class QPushButton;
 class QGridLayout;
 class QComboBox;
 class QSettings;
+class QCheckBox;
 
 namespace cv{
     class VideoCapture;
@@ -82,6 +83,8 @@ private:
     QLabel      *_lbIrPathDescr;
     QComboBox   *_cbCamPath;
     QComboBox   *_cbIrPath;
+    QComboBox   *_cbIrSpeed;
+    QCheckBox   *_cbDebugUi;
 
     QTimer      *_timer;
 
